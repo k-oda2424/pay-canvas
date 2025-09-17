@@ -1,0 +1,24 @@
+.super-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 420px;
+}
+
+.super-form select,
+.super-form input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.form-success {
+  color: #15803d;
+  font-size: 14px;
+}
+
+.form-error {
+  color: #b91c1c;
+  font-size: 14px;
+}

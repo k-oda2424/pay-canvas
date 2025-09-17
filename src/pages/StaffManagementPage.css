@@ -1,0 +1,111 @@
+.staff-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.master-tabs {
+  display: flex;
+  gap: 12px;
+}
+
+.tab-button {
+  padding: 10px 16px;
+  border: 1px solid #cbd5f5;
+  background: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #1f2937;
+}
+
+.tab-button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.master-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+.table-wrapper {
+  min-width: 0;
+}
+
+.master-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.master-form input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+}
+
+.master-form h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.primary {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+}
+
+.primary:hover {
+  background: #1d4ed8;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-actions button {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #cbd5f5;
+  background: #fff;
+  cursor: pointer;
+}
+
+.table-actions .danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.table-actions .danger:hover {
+  background: #fee2e2;
+}
+
+.ghost {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  background: #fff;
+  cursor: pointer;
+}
+
+.form-error {
+  color: #b91c1c;
+  font-size: 13px;
+}
+
+@media (max-width: 960px) {
+  .master-layout {
+    grid-template-columns: 1fr;
+  }
+}

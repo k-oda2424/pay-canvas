@@ -1,0 +1,17 @@
+.payslip-page {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+}
+
+.payslip-page select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5f5;
+  background: #fff;
+}
