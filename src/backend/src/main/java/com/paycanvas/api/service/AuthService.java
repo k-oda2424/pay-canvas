@@ -16,6 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * ユーザー認証を担当するサービスクラスです。
+ * ログイン、ログアウト、トークン更新の機能を提供し、
+ * JWTトークンベースの認証システムを管理します。
+ */
 @Service
 public class AuthService {
   private final UserRepository userRepository;
@@ -25,6 +30,16 @@ public class AuthService {
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
 
+  /**
+   * AuthServiceのコンストラクタです。
+   *
+   * @param userRepository ユーザー情報のリポジトリ
+   * @param passwordEncoder パスワードエンコーダー
+   * @param companyFeatureRepository 会社機能設定のリポジトリ
+   * @param featureRepository 機能マスターのリポジトリ
+   * @param jwtService JWTトークン管理サービス
+   * @param refreshTokenService リフレッシュトークン管理サービス
+   */
   public AuthService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
@@ -40,6 +55,15 @@ public class AuthService {
     this.refreshTokenService = refreshTokenService;
   }
 
+  /**
+   * ユーザーのログイン処理を実行します。
+   * メールアドレスとパスワードを検証し、成功時はJWTトークンと
+   * リフレッシュトークンを含むレスポンスを返します。
+   *
+   * @param email ユーザーのメールアドレス
+   * @param rawPassword パスワード（平文）
+   * @return ログイン成功時の認証情報、失敗時はnull
+   */
   @Transactional
   public LoginResponse login(String email, String rawPassword) {
     UserAccount user =
@@ -67,6 +91,15 @@ public class AuthService {
         accessToken.token(), refreshToken.getToken(), accessToken.expiresAt(), summary);
   }
 
+  /**
+   * リフレッシュトークンを使用してアクセストークンを更新します。
+   * 有効なリフレッシュトークンを検証し、新しいアクセストークンと
+   * リフレッシュトークンを発行します。
+   *
+   * @param refreshTokenValue リフレッシュトークンの値
+   * @return 新しい認証情報
+   * @throws IllegalArgumentException リフレッシュトークンが無効な場合
+   */
   @Transactional
   public LoginResponse refresh(String refreshTokenValue) {
     RefreshToken existing = refreshTokenService.validate(refreshTokenValue);
@@ -82,6 +115,14 @@ public class AuthService {
         accessToken.token(), rotated.getToken(), accessToken.expiresAt(), summary);
   }
 
+  /**
+   * ユーザーの利用可能機能を解決します。
+   * SUPER_ADMINの場合は全機能、それ以外は会社に設定された機能のみを返します。
+   *
+   * @param user ユーザーアカウント
+   * @param roleKey ユーザーの役割キー
+   * @return 利用可能な機能のキーリスト
+   */
   private List<String> resolveFeatures(UserAccount user, String roleKey) {
     if ("SUPER_ADMIN".equals(roleKey)) {
       return featureRepository.findAll().stream()
@@ -100,6 +141,15 @@ public class AuthService {
     return toggles.stream().map(cf -> cf.getFeature().getFeatureKey()).collect(Collectors.toList());
   }
 
+  /**
+   * ユーザーサマリー情報を構築します。
+   * JWTトークンに含めるユーザーの基本情報を作成します。
+   *
+   * @param user ユーザーアカウント
+   * @param roleKey ユーザーの役割キー
+   * @param enabledFeatures 利用可能な機能リスト
+   * @return ユーザーサマリー情報
+   */
   private UserSummary buildSummary(UserAccount user, String roleKey, List<String> enabledFeatures) {
     Company company = user.getCompany();
     long companyId = company != null ? company.getId() : 0L;

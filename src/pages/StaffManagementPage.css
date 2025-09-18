@@ -4,108 +4,190 @@
   gap: 24px;
 }
 
-.master-tabs {
+.master-card {
   display: flex;
-  gap: 12px;
-}
-
-.tab-button {
-  padding: 10px 16px;
-  border: 1px solid #cbd5f5;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
   background: #fff;
-  border-radius: 8px;
-  cursor: pointer;
-  color: #1f2937;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
 }
 
-.tab-button.active {
+.inner-tabs {
+  display: inline-flex;
+  gap: 6px;
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 4px;
+  align-self: flex-start;
+}
+
+.inner-tab {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #4b5563;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.inner-tab:hover {
+  background: rgba(37, 99, 235, 0.12);
+}
+
+.inner-tab.active {
   background: #2563eb;
   color: #fff;
-  border-color: #2563eb;
-}
-
-.master-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 24px;
-  align-items: start;
-}
-
-.table-wrapper {
-  min-width: 0;
 }
 
 .master-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
+  gap: 20px;
 }
 
-.master-form input {
-  padding: 8px 10px;
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px 18px;
+}
+
+.master-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.master-form input,
+.master-form select {
+  padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #d1d5db;
+  font-size: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.master-form h3 {
-  margin: 0;
-  font-size: 16px;
+.master-form input:focus,
+.master-form select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.master-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.table-action {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #cbd5f5;
+  background: #f8fafc;
+  cursor: pointer;
+  color: #1d4ed8;
+  transition: background 0.2s ease;
+}
+
+.table-action:hover {
+  background: #e2e8ff;
+}
+
+.list-hint {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.master-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 
 .primary {
-  padding: 10px 12px;
-  border-radius: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
   border: none;
   background: #2563eb;
   color: #fff;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .primary:hover {
   background: #1d4ed8;
+  transform: translateY(-1px);
 }
 
-.table-actions {
-  display: flex;
-  gap: 8px;
-}
-
-.table-actions button {
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #cbd5f5;
-  background: #fff;
-  cursor: pointer;
-}
-
-.table-actions .danger {
-  border-color: #fecaca;
-  color: #b91c1c;
-}
-
-.table-actions .danger:hover {
-  background: #fee2e2;
+.primary:disabled {
+  background: #93c5fd;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .ghost {
-  padding: 8px 12px;
+  padding: 10px 16px;
   border-radius: 8px;
   border: 1px solid #cbd5f5;
   background: #fff;
+  color: #1d4ed8;
+  font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.ghost:hover {
+  background: #eef4ff;
+}
+
+.form-success {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #166534;
+  font-size: 13px;
 }
 
 .form-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 12px;
   color: #b91c1c;
   font-size: 13px;
 }
 
-@media (max-width: 960px) {
-  .master-layout {
-    grid-template-columns: 1fr;
-  }
+.form-info {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.empty-edit {
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px dashed #cbd5f5;
+  text-align: center;
+  color: #6b7280;
+  background: #f8fafc;
+}
+
+.page-loading {
+  padding: 24px;
+  text-align: center;
+  color: #6b7280;
 }

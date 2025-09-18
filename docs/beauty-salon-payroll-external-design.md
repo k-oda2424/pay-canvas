@@ -36,7 +36,7 @@
 - `GET /api/payroll/execute`: 給与計算実行
 - `GET /api/payslips/{year}/{month}`: 月次給与明細一覧取得
 - `GET /api/payslips/{year}/{month}/{employeeId}`: 個人給与明細取得
-- `POST /api/super/companies`: (スーパー管理者) 新規会社登録
+- `POST /api/super/companies`: (スーパー管理者) 新規利用企業登録
 - `PUT /api/super/companies/{id}/features`: (スーパー管理者) 機能フラグ設定
 
 ---

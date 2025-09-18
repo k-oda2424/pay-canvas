@@ -22,8 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 
+/**
+ * マスターデータの管理を担当するサービスクラスです。
+ * 店舗、等級、給与階層などの基本データのCRUD操作を提供します。
+ */
 @Service
 public class MasterDataService {
+  /** デフォルト会社のID */
   private static final int DEFAULT_COMPANY_ID = 1;
 
   private final CompanyRepository companyRepository;
@@ -31,6 +36,14 @@ public class MasterDataService {
   private final EmployeeGradeRepository employeeGradeRepository;
   private final SalaryTierRepository salaryTierRepository;
 
+  /**
+   * MasterDataServiceのコンストラクタです。
+   *
+   * @param companyRepository 会社情報のリポジトリ
+   * @param storeRepository 店舗情報のリポジトリ
+   * @param employeeGradeRepository 従業員等級のリポジトリ
+   * @param salaryTierRepository 給与階層のリポジトリ
+   */
   public MasterDataService(
       CompanyRepository companyRepository,
       StoreRepository storeRepository,
@@ -42,6 +55,12 @@ public class MasterDataService {
     this.salaryTierRepository = salaryTierRepository;
   }
 
+  /**
+   * デフォルト会社の情報を取得します。
+   *
+   * @return デフォルトの会社エンティティ
+   * @throws ResponseStatusException デフォルトの会社が見つからない場合
+   */
   private Company defaultCompany() {
     return companyRepository
         .findById(DEFAULT_COMPANY_ID)
@@ -49,6 +68,12 @@ public class MasterDataService {
   }
 
   // --- Stores ---
+  /**
+   * デフォルト会社の全店舗一覧を取得します。
+   * 店舗はIDの昇順でソートされて返されます。
+   *
+   * @return 店舗レスポンスのリスト
+   */
   @Transactional(readOnly = true)
   public List<StoreResponse> listStores() {
     return storeRepository.findByCompany_Id(DEFAULT_COMPANY_ID).stream()
@@ -57,6 +82,13 @@ public class MasterDataService {
         .toList();
   }
 
+  /**
+   * 新しい店舗を作成します。
+   * デフォルト会社に関連付けられた店舗として作成されます。
+   *
+   * @param request 店舗作成リクエスト（店舗名、店舗タイプ、住所を含む）
+   * @return 作成された店舗のレスポンス
+   */
   @Transactional
   public StoreResponse createStore(StoreRequest request) {
     Store store = new Store();
@@ -68,6 +100,15 @@ public class MasterDataService {
     return new StoreResponse(saved.getId(), saved.getName(), saved.getStoreType(), saved.getAddress());
   }
 
+  /**
+   * 既存の店舗情報を更新します。
+   * 指定されたIDの店舗が存在しない場合は例外をスローします。
+   *
+   * @param id 更新対象の店舗ID
+   * @param request 店舗更新リクエスト（店舗名、店舗タイプ、住所を含む）
+   * @return 更新された店舗のレスポンス
+   * @throws ResponseStatusException 指定されたIDの店舗が見つからない場合
+   */
   @Transactional
   public StoreResponse updateStore(Integer id, StoreRequest request) {
     Store store =
@@ -81,6 +122,13 @@ public class MasterDataService {
     return new StoreResponse(saved.getId(), saved.getName(), saved.getStoreType(), saved.getAddress());
   }
 
+  /**
+   * 指定されたIDの店舗を削除します。
+   * 指定されたIDの店舗が存在しない場合は例外をスローします。
+   *
+   * @param id 削除対象の店舗ID
+   * @throws ResponseStatusException 指定されたIDの店舗が見つからない場合
+   */
   @Transactional
   public void deleteStore(Integer id) {
     if (!storeRepository.existsById(id)) {
@@ -90,6 +138,11 @@ public class MasterDataService {
   }
 
   // --- Grades ---
+  /**
+   * デフォルト会社の全従業員等級一覧を取得します。
+   *
+   * @return 等級レスポンスのリスト
+   */
   @Transactional(readOnly = true)
   public List<GradeResponse> listGrades() {
     return employeeGradeRepository.findByCompany_Id(DEFAULT_COMPANY_ID).stream()
@@ -97,6 +150,14 @@ public class MasterDataService {
         .toList();
   }
 
+  /**
+   * 新しい従業員等級を作成します。
+   * デフォルト会社に関連付けられた等級として作成されます。
+   * コミッション率はパーセント値から小数値に変換されます。
+   *
+   * @param request 等級作成リクエスト（等級名、コミッション率（パーセント）を含む）
+   * @return 作成された等級のレスポンス
+   */
   @Transactional
   public GradeResponse createGrade(GradeRequest request) {
     EmployeeGrade grade = new EmployeeGrade();
@@ -107,6 +168,16 @@ public class MasterDataService {
     return new GradeResponse(saved.getId(), saved.getGradeName(), saved.getCommissionRate());
   }
 
+  /**
+   * 既存の従業員等級情報を更新します。
+   * 指定されたIDの等級が存在しない場合は例外をスローします。
+   * コミッション率はパーセント値から小数値に変換されます。
+   *
+   * @param id 更新対象の等級ID
+   * @param request 等級更新リクエスト（等級名、コミッション率（パーセント）を含む）
+   * @return 更新された等級のレスポンス
+   * @throws ResponseStatusException 指定されたIDの等級が見つからない場合
+   */
   @Transactional
   public GradeResponse updateGrade(Integer id, GradeRequest request) {
     EmployeeGrade grade =
@@ -119,6 +190,13 @@ public class MasterDataService {
     return new GradeResponse(saved.getId(), saved.getGradeName(), saved.getCommissionRate());
   }
 
+  /**
+   * 指定されたIDの従業員等級を削除します。
+   * 指定されたIDの等級が存在しない場合は例外をスローします。
+   *
+   * @param id 削除対象の等級ID
+   * @throws ResponseStatusException 指定されたIDの等級が見つからない場合
+   */
   @Transactional
   public void deleteGrade(Integer id) {
     if (!employeeGradeRepository.existsById(id)) {
@@ -128,6 +206,11 @@ public class MasterDataService {
   }
 
   // --- Salary Tiers ---
+  /**
+   * デフォルト会社の全給与階層一覧を取得します。
+   *
+   * @return 給与階層レスポンスのリスト
+   */
   @Transactional(readOnly = true)
   public List<SalaryTierResponse> listSalaryTiers() {
     return salaryTierRepository.findByCompany_Id(DEFAULT_COMPANY_ID).stream()
@@ -135,6 +218,13 @@ public class MasterDataService {
         .toList();
   }
 
+  /**
+   * 新しい給与階層を作成します。
+   * デフォルト会社に関連付けられた給与階層として作成されます。
+   *
+   * @param request 給与階層作成リクエスト（プラン名、月次休日数、基本給を含む）
+   * @return 作成された給与階層のレスポンス
+   */
   @Transactional
   public SalaryTierResponse createSalaryTier(SalaryTierRequest request) {
     SalaryTier tier = new SalaryTier();
@@ -146,6 +236,15 @@ public class MasterDataService {
     return new SalaryTierResponse(saved.getId(), saved.getPlanName(), saved.getMonthlyDaysOff(), saved.getBaseSalary());
   }
 
+  /**
+   * 既存の給与階層情報を更新します。
+   * 指定されたIDの給与階層が存在しない場合は例外をスローします。
+   *
+   * @param id 更新対象の給与階層ID
+   * @param request 給与階層更新リクエスト（プラン名、月次休日数、基本給を含む）
+   * @return 更新された給与階層のレスポンス
+   * @throws ResponseStatusException 指定されたIDの給与プランが見つからない場合
+   */
   @Transactional
   public SalaryTierResponse updateSalaryTier(Integer id, SalaryTierRequest request) {
     SalaryTier tier =
@@ -159,6 +258,13 @@ public class MasterDataService {
     return new SalaryTierResponse(saved.getId(), saved.getPlanName(), saved.getMonthlyDaysOff(), saved.getBaseSalary());
   }
 
+  /**
+   * 指定されたIDの給与階層を削除します。
+   * 指定されたIDの給与階層が存在しない場合は例外をスローします。
+   *
+   * @param id 削除対象の給与階層ID
+   * @throws ResponseStatusException 指定されたIDの給与プランが見つからない場合
+   */
   @Transactional
   public void deleteSalaryTier(Integer id) {
     if (!salaryTierRepository.existsById(id)) {
@@ -167,6 +273,13 @@ public class MasterDataService {
     salaryTierRepository.deleteById(id);
   }
 
+  /**
+   * パーセント値を小数値に変換します。
+   * 例：5% → 0.05
+   *
+   * @param percent パーセント値（BigDecimal形式）
+   * @return 小数値（double形式）
+   */
   private double percentToDecimal(BigDecimal percent) {
     return percent.divide(BigDecimal.valueOf(100)).doubleValue();
   }

@@ -72,10 +72,15 @@ export type Payslip = {
 export type EmployeeMaster = {
   id: number;
   name: string;
-  grade: string;
+  gradeId?: number | null;
+  grade: string | null;
   employmentType: string;
-  salaryPlan: string;
-  store: string;
+  salaryTierId?: number | null;
+  salaryPlan: string | null;
+  storeId?: number | null;
+  storeName: string | null;
+  guaranteedMinimumSalary?: number | null;
+  managerAllowance?: number | null;
 };
 
 export type FeatureToggle = {

@@ -18,10 +18,11 @@ import { StaffManagementPage } from './pages/StaffManagementPage';
 import { FeatureTogglePage } from './pages/FeatureTogglePage';
 import { RoleGuard } from './components/RoleGuard';
 import { SuperAdminUsersPage } from './pages/SuperAdminUsersPage';
+import { SuperAdminCompaniesPage } from './pages/SuperAdminCompaniesPage';
 
 const routesByRole = {
-  SUPER_ADMIN: ['/dashboard', '/feature-toggles', '/super/users'],
-  COMPANY_ADMIN: ['/dashboard', '/daily-metrics', '/payroll', '/payslips', '/staff'],
+  SUPER_ADMIN: ['/dashboard', '/feature-toggles', '/super/users', '/super/companies'],
+  COMPANY_ADMIN: ['/dashboard', '/daily-metrics', '/payroll', '/payslips', '/staff/employees'],
   STAFF: ['/dashboard', '/payslips']
 } as const;
 
@@ -103,8 +104,9 @@ const App = () => {
               </RoleGuard>
             }
           />
+          <Route path="staff" element={<Navigate to="/staff/employees" replace />} />
           <Route
-            path="staff"
+            path="staff/:section"
             element={
               <RoleGuard allow={['COMPANY_ADMIN']}>
                 <StaffManagementPage />
@@ -124,6 +126,14 @@ const App = () => {
             element={
               <RoleGuard allow={['SUPER_ADMIN']}>
                 <SuperAdminUsersPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="super/companies"
+            element={
+              <RoleGuard allow={['SUPER_ADMIN']}>
+                <SuperAdminCompaniesPage />
               </RoleGuard>
             }
           />

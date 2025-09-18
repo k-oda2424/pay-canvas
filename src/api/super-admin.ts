@@ -1,9 +1,15 @@
-import { apiGet, apiPost } from './client';
+import { apiGet, apiPost, apiPut } from './client';
 
 export type CompanySummary = {
   id: number;
   name: string;
   status: string;
+  postalCode?: string;
+  address?: string;
+  phone?: string;
+  contactName?: string;
+  contactKana?: string;
+  contactEmail?: string;
 };
 
 export type AdminUserPayload = {
@@ -21,7 +27,25 @@ export type AdminUserResponse = {
   companyName: string;
 };
 
-export const fetchCompanies = () => apiGet<CompanySummary[]>('http://localhost:8080/api/super/companies');
+export type CompanyPayload = {
+  name: string;
+  postalCode: string;
+  address: string;
+  phone: string;
+  contactName: string;
+  contactKana: string;
+  contactEmail: string;
+};
+
+export type CompanyCreateResponse = CompanySummary;
+
+export const fetchCompanies = () => apiGet<CompanySummary[]>('/api/super/companies');
 
 export const createCompanyAdmin = (payload: AdminUserPayload) =>
-  apiPost<AdminUserResponse>('http://localhost:8080/api/super/users', payload);
+  apiPost<AdminUserResponse>('/api/super/users', payload);
+
+export const createCompany = (payload: CompanyPayload) =>
+  apiPost<CompanyCreateResponse>('/api/super/companies', payload);
+
+export const updateCompany = (id: number, payload: CompanyPayload) =>
+  apiPut<CompanySummary>(`/api/super/companies/${id}`, payload);

@@ -1,10 +1,11 @@
 import { FormEvent, useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Section } from '../components/Section';
 import { createCompanyAdmin, fetchCompanies } from '../api/super-admin';
 import './SuperAdminUsersPage.css';
 
 export const SuperAdminUsersPage = () => {
+  const queryClient = useQueryClient();
   const companiesQuery = useQuery({ queryKey: ['super-companies'], queryFn: fetchCompanies });
   const mutation = useMutation({ mutationFn: createCompanyAdmin });
 
@@ -23,7 +24,7 @@ export const SuperAdminUsersPage = () => {
     setError('');
 
     if (!formState.companyId) {
-      setError('会社を選択してください');
+      setError('利用企業を選択してください');
       return;
     }
     if (!formState.email.trim()) {
@@ -60,15 +61,15 @@ export const SuperAdminUsersPage = () => {
 
   return (
     <Section
-      title="会社管理者の登録"
-      description="各テナントの管理者ユーザーを作成します。登録後、ログイン情報を通知してください。"
+      title="利用企業管理者の登録"
+      description="各利用企業の管理者ユーザーを作成します。登録後、ログイン情報を通知してください。"
     >
       {companiesQuery.isLoading ? (
-        <div className="page-loading">会社情報を読み込んでいます...</div>
+        <div className="page-loading">利用企業情報を読み込んでいます...</div>
       ) : (
         <form className="super-form" onSubmit={handleSubmit}>
           <label>
-            会社
+            利用企業
             <select
               value={formState.companyId}
               onChange={(event) => setFormState((prev) => ({ ...prev, companyId: event.target.value }))}

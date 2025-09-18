@@ -1,7 +1,7 @@
 # payCanvas バックエンド データモデル概要
 
 ## 1. マスタ系
-- `m_companies`: テナント会社情報。`status` は `ACTIVE`/`SUSPENDED`。
+- `m_companies`: テナント会社情報。`status` や郵便番号・住所・電話・担当者情報を保持。
 - `m_roles`: システム内の権限定義。`role_key` は `SUPER_ADMIN`/`COMPANY_ADMIN`/`STAFF`。
 - `m_features`: 機能フラグ。`feature_key` で論理識別。
 - `m_company_features`: 会社ごとの機能有効化設定。
@@ -31,6 +31,7 @@
 - `V3__store_master.sql`: 店舗マスタ作成・初期データ投入。
 - `V4__refresh_tokens.sql`: リフレッシュトークンテーブルの追加。
 - `V5__add_store_address.sql`: 店舗住所カラムの追加。
+- `V6__extend_companies.sql`: 会社情報の住所・連絡先カラム追加。
 
 ## 5. 今後の拡張ポイント
 - `t_bonuses` 等の未使用テーブルの実装。

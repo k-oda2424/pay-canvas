@@ -1,57 +1,67 @@
-# Repository Guidelines
+# リポジトリガイドライン
 
-## Project Structure & Module Organization
+## プロジェクト構成とモジュール設計
 
-Use a simple, predictable layout:
+以下のシンプルで予測しやすい構成を維持してください。
 
 ```
-/src       # application/library code
-/test      # automated tests mirroring src
-/assets    # static assets (images, styles, fixtures)
-/scripts   # dev tooling and one-off scripts
-/docs      # additional documentation
+/src       # アプリケーション／ライブラリコード
+/test      # src と対応する自動テスト
+/assets    # 画像・スタイル・フィクスチャ等の静的アセット
+/scripts   # 開発支援スクリプトやワンオフツール
+/docs      # 追加ドキュメント
 ```
 
-Keep modules small and cohesive. Co-locate tests and fixtures when it improves clarity. Prefer index files only when they simplify imports.
+- モジュールは小さく凝集度高く保ちます。
+- テストやフィクスチャは、明瞭さが高まる場合は対象モジュール近くに配置しても構いません。
+- import を簡潔にできる場合のみ index ファイルを利用します。
 
-## Build, Test, and Development Commands
+## ビルド・テスト・開発コマンド
 
-Prefer Make targets when available:
-- make setup: install dependencies and prepare tooling
-- make dev: run local dev server or watch mode
-- make build: produce a production build or compiled artifact
-- make test: run tests with coverage
-- make lint / make fmt: lint and auto-format the codebase
+Makefile がある場合は以下を優先します。
+- `make setup`: 依存関係インストールとツール準備
+- `make dev`: ローカル開発サーバー／ウォッチモード
+- `make build`: 本番ビルドや成果物生成
+- `make test`: カバレッジ付きテスト実行
+- `make lint` / `make fmt`: リントと自動整形
 
-If no Makefile exists, use language-native scripts (examples):
-- npm ci | npm install
-- npm run dev | npm run build | npm test
+Makefile が無い場合は各スタック標準のスクリプトを利用してください。
+- `npm ci` / `npm install`
+- `npm run dev` / `npm run build` / `npm test`
 
-## Coding Style & Naming Conventions
+## コーディングスタイルと命名
 
-- Indentation: 2 spaces; UTF-8; LF line endings; max line length ~100.
-- Filenames/dirs: kebab-case (e.g., `payment-canvas/`); tests: mirror src path.
-- Identifiers: camelCase for variables/functions; PascalCase for classes/types; UPPER_SNAKE_CASE for constants.
-- Formatting: run `make fmt` or `npm run format` (use Prettier/black/gofmt per stack).
-- Linting: run `make lint` or `npm run lint`; fix warnings proactively.
+- インデントは 2 スペース、UTF-8、改行は LF、行長は概ね 100 文字以内。
+- ファイル・ディレクトリ名は kebab-case（例: `payment-canvas/`）。テストは src と同じパス構成。
+- 変数・関数は camelCase、クラス・型は PascalCase、定数は UPPER_SNAKE_CASE。
+- フォーマッタは `make fmt` または `npm run format` を使用（Prettier / black / gofmt などスタック標準）。
+- `make lint` や `npm run lint` を実行し、警告は可能な限り修正。
 
-## Testing Guidelines
+## テストガイドライン
 
-- Place tests under `/test` mirroring `/src` (e.g., `src/canvas/draw.ts` → `test/canvas/draw.spec.ts`).
-- Name tests `*.spec.*` or `*_test.*` per ecosystem. Aim for ≥80% coverage on core modules.
-- Write fast, isolated unit tests; add integration tests for edge cases and critical flows.
-- Run locally before pushing: `make test` or `npm test`.
+- テストは `/test` 配下に配置し、`src` のパス構造を反映させます（例: `src/canvas/draw.ts` → `test/canvas/draw.spec.ts`）。
+- テストファイル名は `*.spec.*` または `*_test.*` に揃えます。
+- コアモジュールはカバレッジ 80% 以上を目標とし、軽量で独立したユニットテストを優先。重要なフローには統合テストを追加。
+- 変更前後で `make test` または `npm test` をローカル実行。
 
-## Commit & Pull Request Guidelines
+## コミット・PR ガイドライン
 
-- Use Conventional Commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`. Keep subject ≤72 chars.
-- Reference issues in body (e.g., `Closes #123`) and explain motivation + approach.
-- PRs: include a clear summary, linked issue, test evidence (logs/screenshots), and note any breaking changes or migrations.
-- Keep PRs small and focused; update docs and examples when behavior changes.
+- コミットメッセージは Conventional Commits (`feat:`, `fix:`, `docs:`, `refactor:`, `test:`, `chore:`) を使用し、件名は 72 文字以内。
+- 本文に課題番号（例: `Closes #123`）と動機・アプローチを明記。
+- PR には要約・関連 Issue・テスト結果（ログやスクリーンショット）・破壊的変更や移行の有無を記載。
+- PR は小さく焦点を絞り、振る舞い変更時はドキュメントやサンプルも更新。
 
-## Security & Configuration Tips
+## セキュリティと設定
 
-- Never commit secrets. Use `.env.example` and local `.env` (gitignored). Rotate keys when in doubt.
-- Prefer least-privileged tokens for CI. Validate inputs and handle errors explicitly.
-- Run linters/tests on every branch; enforce status checks before merging.
+- 秘密情報はコミットしないでください。`.env.example` を整備し、`.env` は gitignore 対象に。
+- CI では最小権限のトークンを使用し、入力値の検証とエラー処理を明示的に行います。
+- すべてのブランチでリント／テストを実行し、ステータスチェックを必須化します。
 
+## 最近の実装メモ
+
+- 利用企業管理ページをタブ UI（登録／一覧／編集）へ刷新し、一覧から編集タブへの遷移やフォーム共有化を実装済み。
+- 利用企業関連の文言を「会社」から「利用企業」に統一し、UI・バックエンド・ドキュメント間で整合性を確保。
+- 新しいレイアウトに合わせたスタイルを `src/pages/SuperAdminCompaniesPage.css` に追加し、操作性と視認性を改善。
+- 従業員マスタにCRUD APIとフォームUIを追加し、店舗マスタと同様の操作性で登録・編集・削除できるように整備。
+- 従業員の所属店舗を`m_stores`と外部キー連携し、フロントエンドでも店舗を選択して紐付ける設計に更新。
+- マスタ管理画面をタブ付きの新レイアウトに刷新し、従業員／店舗／等級／給与プランごとの一覧＋フォームを分かりやすく再配置。メニューも階層表示に対応。
