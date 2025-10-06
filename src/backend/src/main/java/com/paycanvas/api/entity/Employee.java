@@ -10,7 +10,9 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
+import lombok.Data;
 /**
  * 従業員マスターエンティティクラス。
  *
@@ -25,9 +27,10 @@ import java.math.BigDecimal;
  *   <li>所属企業・店舗との関連付け</li>
  * </ul>
  */
+@Data
 @Entity
 @Table(name = "m_employees")
-public class Employee {
+public class Employee implements ICompanyEntity {
   /**
    * 従業員ID（主キー）。
    * データベースにて自動採番される一意の識別子です。
@@ -46,6 +49,14 @@ public class Employee {
   private Company company;
 
   /**
+   * 企業ごとの表示用ID。
+   * 企業内で1から始まる連番で、ユーザーが編集可能です。
+   * (company_id, display_id) の組み合わせで一意になります。
+   */
+  @Column(name = "display_id", nullable = false)
+  private Integer displayId;
+
+  /**
    * 従業員氏名。
    * 従業員の氏名（フルネーム）を格納します。
    */
@@ -62,13 +73,12 @@ public class Employee {
   private EmployeeGrade grade;
 
   /**
-   * 給与階層。
-   * 従業員の給与階層への参照です。
-   * 基本給の算出に使用されます。
+   * 勤務パターン。
+   * 従業員の勤務形態（週休2日など）を表します。
    */
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "salary_tier_id")
-  private SalaryTier salaryTier;
+  @JoinColumn(name = "work_pattern_id")
+  private WorkPattern workPattern;
 
   /**
    * 雇用形態。
@@ -103,7 +113,6 @@ public class Employee {
   /**
    * 固定残業時間（分）。
    * みなし残業時間を分単位で格納します。
-   * 給与計算時の固定残業代算出に使用されます。
    */
   @Column(name = "fixed_overtime_minutes")
   private Integer fixedOvertimeMinutes;
@@ -111,92 +120,62 @@ public class Employee {
   /**
    * 歩合減額率。
    * 歩合給から控除される割合を小数点で表現します（例：0.1 = 10%控除）。
-   * 社会保険料や福利厚生費の控除計算に使用されます。
    */
   @Column(name = "commission_reduction_rate")
   private BigDecimal commissionReductionRate;
 
-  public Integer getId() {
-    return id;
-  }
+  /**
+   * 役員フラグ。
+   * true の場合、役員報酬の計算ロジックが適用されます。
+   */
+  @Column(name = "is_board_member")
+  private Boolean isBoardMember = false;
 
-  public Company getCompany() {
-    return company;
-  }
+  /**
+   * 役員報酬。
+   * 役員に支払われる固定報酬額です。
+   */
+  @Column(name = "board_compensation")
+  private Integer boardCompensation;
 
-  public void setCompany(Company company) {
-    this.company = company;
-  }
+  /**
+   * 入社日。
+   * 従業員の入社日を格納します。
+   */
+  @Column(name = "hire_date")
+  private java.time.LocalDate hireDate;
 
-  public String getName() {
-    return name;
-  }
+  /**
+   * 扶養親族等の数。
+   * 所得税の源泉徴収計算に使用されます。
+   */
+  @Column(name = "number_of_dependents")
+  private Integer numberOfDependents = 0;
 
-  public void setName(String name) {
-    this.name = name;
-  }
+  /**
+   * 住民税月額。
+   * 個人ごとに異なる住民税の月額控除額です。
+   */
+  @Column(name = "resident_tax_monthly")
+  private Integer residentTaxMonthly = 0;
 
-  public EmployeeGrade getGrade() {
-    return grade;
-  }
+    /**
+     * 健康保険の標準報酬月額（社会保険事務所通知ベース）
+     */
+    @Column(name = "health_insurance_standard_amount")
+    private Integer healthInsuranceStandardAmount;
 
-  public void setGrade(EmployeeGrade grade) {
-    this.grade = grade;
-  }
+    /**
+     * 厚生年金保険の標準報酬月額（社会保険事務所通知ベース）
+     */
+    @Column(name = "pension_insurance_standard_amount")
+    private Integer pensionInsuranceStandardAmount;
 
-  public SalaryTier getSalaryTier() {
-    return salaryTier;
-  }
-
-  public void setSalaryTier(SalaryTier salaryTier) {
-    this.salaryTier = salaryTier;
-  }
-
-  public String getEmploymentType() {
-    return employmentType;
-  }
-
-  public void setEmploymentType(String employmentType) {
-    this.employmentType = employmentType;
-  }
-
-  public Store getStore() {
-    return store;
-  }
-
-  public void setStore(Store store) {
-    this.store = store;
-  }
-
-  public Integer getGuaranteedMinimumSalary() {
-    return guaranteedMinimumSalary;
-  }
-
-  public void setGuaranteedMinimumSalary(Integer guaranteedMinimumSalary) {
-    this.guaranteedMinimumSalary = guaranteedMinimumSalary;
-  }
-
-  public Integer getManagerAllowance() {
-    return managerAllowance;
-  }
-
-  public void setManagerAllowance(Integer managerAllowance) {
-    this.managerAllowance = managerAllowance;
-  }
-
-  public Integer getFixedOvertimeMinutes() {
-    return fixedOvertimeMinutes;
-  }
-
-  public void setFixedOvertimeMinutes(Integer fixedOvertimeMinutes) {
-    this.fixedOvertimeMinutes = fixedOvertimeMinutes;
-  }
-
-  public BigDecimal getCommissionReductionRate() {
-    return commissionReductionRate;
-  }
-
-  public void setCommissionReductionRate(BigDecimal commissionReductionRate) {
-    this.commissionReductionRate = commissionReductionRate;
-  }
+    /**
+     * 退職日（論理削除用）
+     * NULL: 在職中
+     * 日付: 退職済み
+     */
+    @Column(name = "resignation_date")
+    private LocalDate resignationDate;
 }
