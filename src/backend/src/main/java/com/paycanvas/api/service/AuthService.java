@@ -1,17 +1,15 @@
 package com.paycanvas.api.service;
 
 import com.paycanvas.api.entity.Company;
-import com.paycanvas.api.entity.CompanyFeature;
 import com.paycanvas.api.entity.RefreshToken;
 import com.paycanvas.api.entity.UserAccount;
+import com.paycanvas.api.entity.UserRole;
 import com.paycanvas.api.model.LoginResponse;
 import com.paycanvas.api.model.UserSummary;
-import com.paycanvas.api.repository.CompanyFeatureRepository;
-import com.paycanvas.api.repository.FeatureRepository;
 import com.paycanvas.api.repository.UserRepository;
-import java.time.Instant;
+import com.paycanvas.api.repository.UserRoleRepository;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,35 +22,35 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
   private final UserRepository userRepository;
+  private final UserRoleRepository userRoleRepository;
   private final PasswordEncoder passwordEncoder;
-  private final CompanyFeatureRepository companyFeatureRepository;
-  private final FeatureRepository featureRepository;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+  private final FeatureService featureService;
 
   /**
    * AuthServiceのコンストラクタです。
    *
    * @param userRepository ユーザー情報のリポジトリ
+   * @param userRoleRepository ユーザーロール情報のリポジトリ
    * @param passwordEncoder パスワードエンコーダー
-   * @param companyFeatureRepository 会社機能設定のリポジトリ
-   * @param featureRepository 機能マスターのリポジトリ
    * @param jwtService JWTトークン管理サービス
    * @param refreshTokenService リフレッシュトークン管理サービス
+   * @param featureService 機能管理サービス
    */
   public AuthService(
       UserRepository userRepository,
+      UserRoleRepository userRoleRepository,
       PasswordEncoder passwordEncoder,
-      CompanyFeatureRepository companyFeatureRepository,
-      FeatureRepository featureRepository,
       JwtService jwtService,
-      RefreshTokenService refreshTokenService) {
+      RefreshTokenService refreshTokenService,
+      FeatureService featureService) {
     this.userRepository = userRepository;
+    this.userRoleRepository = userRoleRepository;
     this.passwordEncoder = passwordEncoder;
-    this.companyFeatureRepository = companyFeatureRepository;
-    this.featureRepository = featureRepository;
     this.jwtService = jwtService;
     this.refreshTokenService = refreshTokenService;
+    this.featureService = featureService;
   }
 
   /**
@@ -74,6 +72,10 @@ public class AuthService {
     if (user == null) {
       return null;
     }
+
+    // Manually load roles with the Role entity
+    List<UserRole> userRoles = userRoleRepository.findByUserIdWithRole(user.getId());
+    user.setRoles(new HashSet<>(userRoles));
 
     String roleKey =
         user.getRoles().stream()
@@ -124,21 +126,20 @@ public class AuthService {
    * @return 利用可能な機能のキーリスト
    */
   private List<String> resolveFeatures(UserAccount user, String roleKey) {
+    // SUPER_ADMINは全機能にアクセス可能
     if ("SUPER_ADMIN".equals(roleKey)) {
-      return featureRepository.findAll().stream()
-          .map(feature -> feature.getFeatureKey())
-          .collect(Collectors.toList());
+      return featureService.listAllFeatures().stream()
+          .map(com.paycanvas.api.entity.Feature::getFeatureKey)
+          .toList();
     }
 
+    // 一般ユーザーは企業に設定された有効な機能のみ
     Company company = user.getCompany();
     if (company == null) {
       return List.of();
     }
 
-    List<CompanyFeature> toggles =
-        companyFeatureRepository.findByCompany_IdAndEnabledTrue(company.getId());
-
-    return toggles.stream().map(cf -> cf.getFeature().getFeatureKey()).collect(Collectors.toList());
+    return featureService.listEnabledFeatureCodes(company.getId());
   }
 
   /**
@@ -152,11 +153,11 @@ public class AuthService {
    */
   private UserSummary buildSummary(UserAccount user, String roleKey, List<String> enabledFeatures) {
     Company company = user.getCompany();
-    long companyId = company != null ? company.getId() : 0L;
+    int companyId = company != null ? company.getId() : 0;
     String companyName = company != null ? company.getName() : "";
 
     return new UserSummary(
-        user.getId().longValue(),
+        user.getId(),
         companyId,
         companyName,
         roleKey,

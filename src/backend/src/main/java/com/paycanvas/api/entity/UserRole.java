@@ -8,7 +8,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
 import jakarta.persistence.Table;
-
 /**
  * ユーザーロール関連エンティティクラス。
  *
@@ -59,19 +58,36 @@ public class UserRole {
     return id;
   }
 
-  public UserAccount getUser() {
-    return user;
+  public void setId(UserRoleId id) {
+    this.id = id;
   }
 
-  public Role getRole() {
-    return role;
+  public UserAccount getUser() {
+    return user;
   }
 
   public void setUser(UserAccount user) {
     this.user = user;
   }
 
+  public Role getRole() {
+    return role;
+  }
+
   public void setRole(Role role) {
     this.role = role;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    UserRole userRole = (UserRole) o;
+    return id != null && id.equals(userRole.id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id != null ? id.hashCode() : 0;
   }
 }
