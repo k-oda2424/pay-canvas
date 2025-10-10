@@ -194,6 +194,68 @@ PGPASSWORD=paycanvas psql -h localhost -U paycanvas -d paycanvas_dev
 - **バリデーション**: コントローラーでリクエスト検証に`@Valid`を使用
 - **トランザクション管理**: サービスで適切に`@Transactional`を使用
 
+### サービスクラス設計
+**全てのサービスクラスはCustomServiceを継承し、CRUD操作には必ずCustomServiceのメソッドを使用すること。**
+
+#### 必須要件
+1. **サービスクラスの継承**
+   - 全てのサービスクラスは`CustomService<エンティティ型, ID型>`を継承すること
+   - 例: `public class EmployeeService extends CustomService<Employee, Integer>`
+
+2. **CRUD操作の実装**
+   - **検索（一覧取得）**: `find(Class<T> entityClass, Integer companyId)` を使用
+   - **取得（ID指定）**: `findById(Class<T> entityClass, Integer id, Integer companyId)` を使用
+   - **作成**: `save(T entity, Integer companyId)` を使用
+   - **更新**: `update(T entity, Integer companyId)` を使用
+   - **削除**: `delete(Class<T> entityClass, Integer id, Integer companyId)` を使用
+
+3. **マルチテナント分離の自動化**
+   - CustomServiceは企業IDによるフィルタリングを自動的に行う
+   - リポジトリを直接使用する場合も、必ず企業IDでフィルタリングすること
+
+#### 実装例
+```java
+// ✅ 正しい: CustomServiceを継承し、findメソッドを使用
+@Service
+public class TransportationCostService extends CustomService<TransportationCost, Integer> {
+
+  public TransportationCostService(TransportationCostRepository repository) {
+    super(repository);
+  }
+
+  public List<TransportationCostResponse> listByCompanyId(Integer companyId) {
+    // CustomServiceのfindメソッドを使用（企業IDフィルタリング自動）
+    return find(TransportationCost.class, companyId).stream()
+        .map(this::toResponse)
+        .toList();
+  }
+
+  public TransportationCostResponse getById(Integer id, Integer companyId) {
+    // CustomServiceのfindByIdメソッドを使用（企業IDチェック自動）
+    TransportationCost cost = findById(TransportationCost.class, id, companyId);
+    return toResponse(cost);
+  }
+}
+
+// ❌ 間違い: リポジトリを直接使用（企業IDフィルタリングなし）
+@Service
+public class TransportationCostService {
+
+  private final TransportationCostRepository repository;
+
+  public List<TransportationCostResponse> listByCompanyId(Integer companyId) {
+    // 危険: CustomServiceを使わずリポジトリ直接呼び出し
+    return repository.findByCompanyId(companyId).stream()
+        .map(this::toResponse)
+        .toList();
+  }
+}
+```
+
+#### 例外的なケース
+- 認証関連（AuthService、JwtService）など、企業IDに依存しない処理のみCustomService継承を省略可能
+- ただし、マスタデータや業務データを扱う全てのサービスは**必ずCustomService継承が必須**
+
 ### エンティティ関係
 - **デフォルト企業**: ID 1はシングルテナント操作用のデフォルト企業として使用
 - **遅延読み込み**: パフォーマンスのため、ほとんどのエンティティ関係は`FetchType.LAZY`を使用
