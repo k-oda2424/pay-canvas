@@ -94,6 +94,9 @@ export const AppLayout = ({ role, userName, companyId, companyName, onLogout }: 
           <span className="profile-role">{role}</span>
           <span className="profile-company">{companyName || (companyId ? `Company #${companyId}` : '所属なし')}</span>
         </div>
+        <button className="logout-button" onClick={onLogout}>
+          ログアウト
+        </button>
         <nav>
           {items.map((item) => (
             <div key={item.to} className={isActive(location.pathname, item) ? 'nav-item-wrap active' : 'nav-item-wrap'}>
@@ -133,9 +136,6 @@ export const AppLayout = ({ role, userName, companyId, companyName, onLogout }: 
         </nav>
         <div className="sidebar-footer">
           <span className="current-path">{location.pathname}</span>
-          <button className="logout-button" onClick={onLogout}>
-            ログアウト
-          </button>
         </div>
       </aside>
       <main className="content">
