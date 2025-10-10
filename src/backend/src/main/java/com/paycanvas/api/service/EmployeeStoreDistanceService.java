@@ -18,9 +18,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 /**
  * 従業員店舗距離マスタサービスクラス。
+ *
+ * <p>CustomServiceを継承し、マルチテナント分離を自動的に行います。
+ * CRUD操作はCustomServiceのメソッドを使用することで、他企業のデータへのアクセスを防ぎます。</p>
  */
 @Service
-public class EmployeeStoreDistanceService {
+public class EmployeeStoreDistanceService extends CustomService {
 
   private final EmployeeStoreDistanceRepository employeeStoreDistanceRepository;
   private final EmployeeRepository employeeRepository;
@@ -41,13 +44,14 @@ public class EmployeeStoreDistanceService {
   /**
    * 指定された従業員IDに紐づく全店舗への距離データを取得します。
    *
+   * <p>CustomServiceのgetCurrentCompanyId()を使用して、ログイン企業のデータのみを取得します。</p>
+   *
    * @param employeeId 従業員ID
    * @return 従業員店舗距離のレスポンスリスト
    */
   @Transactional(readOnly = true)
   public List<EmployeeStoreDistanceResponse> listByEmployee(Integer employeeId) {
-    // TODO: 企業IDでフィルタリング
-    Integer companyId = 1;
+    Integer companyId = getCurrentCompanyId();
     return employeeStoreDistanceRepository.findByEmployeeId(employeeId, companyId).stream()
         .map(this::toResponse)
         .toList();
@@ -56,24 +60,28 @@ public class EmployeeStoreDistanceService {
   /**
    * 企業内の全従業員店舗距離データを取得します。
    *
+   * <p>CustomServiceのfindAll()を使用して、ログイン企業のデータのみを取得します。</p>
+   *
    * @return 従業員店舗距離のレスポンスリスト
    */
   @Transactional(readOnly = true)
   public List<EmployeeStoreDistanceResponse> listAll() {
-    // TODO: 企業IDでフィルタリング（SecurityContextから取得）
-    return employeeStoreDistanceRepository.findAll().stream().map(this::toResponse).toList();
+    return findAll(employeeStoreDistanceRepository).stream()
+        .map(this::toResponse)
+        .toList();
   }
 
   /**
    * 従業員店舗距離を新規登録します。
+   *
+   * <p>CustomServiceのsave()を使用して、自動的にログイン企業を設定します。</p>
    *
    * @param request リクエストデータ
    * @return 登録された従業員店舗距離のレスポンス
    */
   @Transactional
   public EmployeeStoreDistanceResponse create(EmployeeStoreDistanceRequest request) {
-    // TODO: 企業IDでフィルタリング（SecurityContextから取得）
-    Integer companyId = 1; // 仮置き
+    Integer companyId = getCurrentCompanyId();
 
     // 既存チェック
     employeeStoreDistanceRepository
@@ -85,32 +93,33 @@ public class EmployeeStoreDistanceService {
             });
 
     Employee employee =
-        employeeRepository.findById(request.employeeId())
+        findById(employeeRepository, request.employeeId())
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "従業員が見つかりません"));
 
     Store store =
-        storeRepository.findById(request.storeId())
+        findById(storeRepository, request.storeId())
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "店舗が見つかりません"));
 
     CommuteMethod commuteMethod =
-        commuteMethodRepository.findById(request.commuteMethodId())
+        findById(commuteMethodRepository, request.commuteMethodId())
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "通勤手段が見つかりません"));
 
     EmployeeStoreDistance distance = new EmployeeStoreDistance();
-    distance.setCompany(employee.getCompany()); // 従業員の企業を設定
     distance.setEmployee(employee);
     distance.setStore(store);
     distance.setDistanceKm(request.distanceKm());
     distance.setCommuteMethod(commuteMethod);
 
-    EmployeeStoreDistance saved = employeeStoreDistanceRepository.save(distance);
+    EmployeeStoreDistance saved = save(employeeStoreDistanceRepository, distance);
     return toResponse(saved);
   }
 
   /**
    * 従業員店舗距離を更新します。
+   *
+   * <p>CustomServiceのfindById()とsave()を使用して、ログイン企業のデータのみを更新します。</p>
    *
    * @param id      距離データID
    * @param request リクエストデータ
@@ -119,15 +128,14 @@ public class EmployeeStoreDistanceService {
   @Transactional
   public EmployeeStoreDistanceResponse update(Integer id, EmployeeStoreDistanceRequest request) {
     EmployeeStoreDistance distance =
-        employeeStoreDistanceRepository.findById(id)
+        findById(employeeStoreDistanceRepository, id)
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "距離データが見つかりません"));
 
     // 従業員・店舗の変更があれば、重複チェック
     if (!distance.getEmployee().getId().equals(request.employeeId())
         || !distance.getStore().getId().equals(request.storeId())) {
-      // TODO: 企業IDでフィルタリング
-      Integer companyId = 1;
+      Integer companyId = getCurrentCompanyId();
       employeeStoreDistanceRepository
           .findByEmployeeIdAndStoreId(request.employeeId(), request.storeId(), companyId)
           .ifPresent(
@@ -141,7 +149,7 @@ public class EmployeeStoreDistanceService {
 
     if (!distance.getEmployee().getId().equals(request.employeeId())) {
       Employee employee =
-          employeeRepository.findById(request.employeeId())
+          findById(employeeRepository, request.employeeId())
               .orElseThrow(
                   () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "従業員が見つかりません"));
       distance.setEmployee(employee);
@@ -149,7 +157,7 @@ public class EmployeeStoreDistanceService {
 
     if (!distance.getStore().getId().equals(request.storeId())) {
       Store store =
-          storeRepository.findById(request.storeId())
+          findById(storeRepository, request.storeId())
               .orElseThrow(
                   () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "店舗が見つかりません"));
       distance.setStore(store);
@@ -157,7 +165,7 @@ public class EmployeeStoreDistanceService {
 
     if (!distance.getCommuteMethod().getId().equals(request.commuteMethodId())) {
       CommuteMethod commuteMethod =
-          commuteMethodRepository.findById(request.commuteMethodId())
+          findById(commuteMethodRepository, request.commuteMethodId())
               .orElseThrow(
                   () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "通勤手段が見つかりません"));
       distance.setCommuteMethod(commuteMethod);
@@ -165,18 +173,20 @@ public class EmployeeStoreDistanceService {
 
     distance.setDistanceKm(request.distanceKm());
 
-    EmployeeStoreDistance saved = employeeStoreDistanceRepository.save(distance);
+    EmployeeStoreDistance saved = save(employeeStoreDistanceRepository, distance);
     return toResponse(saved);
   }
 
   /**
    * 従業員店舗距離を削除します。
    *
+   * <p>CustomServiceのdeleteById()を使用して、ログイン企業のデータのみを削除します。</p>
+   *
    * @param id 距離データID
    */
   @Transactional
   public void delete(Integer id) {
-    employeeStoreDistanceRepository.deleteById(id);
+    deleteById(employeeStoreDistanceRepository, id);
   }
 
   /**
