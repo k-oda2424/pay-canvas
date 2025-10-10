@@ -68,6 +68,18 @@ nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  text-decoration: none;
+}
+
+/* 親メニューのbutton用スタイル */
+button.nav-item {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: inherit;
+  text-align: left;
+  cursor: pointer;
 }
 
 .nav-item:hover {
@@ -81,15 +93,10 @@ nav {
 }
 
 .nav-submenu {
-  display: none;
+  display: flex;
   flex-direction: column;
   gap: 4px;
   padding-left: 12px;
-}
-
-.nav-item-wrap.active .nav-submenu,
-.nav-item-wrap:hover .nav-submenu {
-  display: flex;
 }
 
 .nav-subitem {

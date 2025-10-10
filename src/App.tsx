@@ -14,14 +14,24 @@ import { DashboardPage } from './pages/DashboardPage';
 import { DailyMetricsPage } from './pages/DailyMetricsPage';
 import { PayrollExecutionPage } from './pages/PayrollExecutionPage';
 import { PayslipListPage } from './pages/PayslipListPage';
-import { StaffManagementPage } from './pages/StaffManagementPage';
-import { FeatureTogglePage } from './pages/FeatureTogglePage';
+import {
+  EmployeeMasterPage,
+  GradeMasterPage,
+  StoreMasterPage,
+  WorkPatternMasterPage
+} from './pages/StaffManagementPage';
+import { StoreDistancePage } from './pages/StoreDistancePage';
+import { CommuteMethodPage } from './pages/CommuteMethodPage';
+import { BusinessTripAllowancePage } from './pages/BusinessTripAllowancePage';
+import { EmployeeStoreDistancePage } from './pages/EmployeeStoreDistancePage';
 import { RoleGuard } from './components/RoleGuard';
 import { SuperAdminUsersPage } from './pages/SuperAdminUsersPage';
 import { SuperAdminCompaniesPage } from './pages/SuperAdminCompaniesPage';
+import { CompanyFeatureManagementPage } from './pages/CompanyFeatureManagementPage';
+import { LegalMastersPage } from './pages/LegalMastersPage';
 
 const routesByRole = {
-  SUPER_ADMIN: ['/dashboard', '/feature-toggles', '/super/users', '/super/companies'],
+  SUPER_ADMIN: ['/dashboard', '/super/users', '/super/companies'],
   COMPANY_ADMIN: ['/dashboard', '/daily-metrics', '/payroll', '/payslips', '/staff/employees'],
   STAFF: ['/dashboard', '/payslips']
 } as const;
@@ -106,18 +116,66 @@ const App = () => {
           />
           <Route path="staff" element={<Navigate to="/staff/employees" replace />} />
           <Route
-            path="staff/:section"
+            path="staff/employees"
             element={
               <RoleGuard allow={['COMPANY_ADMIN']}>
-                <StaffManagementPage />
+                <EmployeeMasterPage />
               </RoleGuard>
             }
           />
           <Route
-            path="feature-toggles"
+            path="staff/stores"
             element={
-              <RoleGuard allow={['SUPER_ADMIN']}>
-                <FeatureTogglePage />
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <StoreMasterPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="staff/grades"
+            element={
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <GradeMasterPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="staff/work-patterns"
+            element={
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <WorkPatternMasterPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="staff/store-distances"
+            element={
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <StoreDistancePage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="staff/commute-methods"
+            element={
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <CommuteMethodPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="staff/business-trip-allowances"
+            element={
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <BusinessTripAllowancePage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="staff/employee-store-distances"
+            element={
+              <RoleGuard allow={['COMPANY_ADMIN']}>
+                <EmployeeStoreDistancePage />
               </RoleGuard>
             }
           />
@@ -134,6 +192,22 @@ const App = () => {
             element={
               <RoleGuard allow={['SUPER_ADMIN']}>
                 <SuperAdminCompaniesPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="super/features"
+            element={
+              <RoleGuard allow={['SUPER_ADMIN']}>
+                <CompanyFeatureManagementPage />
+              </RoleGuard>
+            }
+          />
+          <Route
+            path="super/legal-masters"
+            element={
+              <RoleGuard allow={['SUPER_ADMIN']}>
+                <LegalMastersPage />
               </RoleGuard>
             }
           />

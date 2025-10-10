@@ -1,4 +1,4 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { UserRole } from '../types/user';
 import './AppLayout.css';
@@ -20,9 +20,16 @@ type AppLayoutProps = {
 const navigationByRole: Record<UserRole, NavItem[]> = {
   SUPER_ADMIN: [
     { to: '/dashboard', label: 'ダッシュボード' },
-    { to: '/feature-toggles', label: '機能設定' },
     { to: '/super/users', label: '管理者登録' },
-    { to: '/super/companies', label: '利用企業管理' }
+    { to: '/super/companies', label: '利用企業管理' },
+    { to: '/super/features', label: '企業機能管理' },
+    {
+      to: '/super/masters',
+      label: 'マスタ管理',
+      children: [
+        { to: '/super/legal-masters', label: '法定マスタ管理' }
+      ]
+    }
   ],
   COMPANY_ADMIN: [
     { to: '/dashboard', label: 'ダッシュボード' },
@@ -30,13 +37,17 @@ const navigationByRole: Record<UserRole, NavItem[]> = {
     { to: '/payroll', label: '給与計算' },
     { to: '/payslips', label: '給与明細' },
     {
-      to: '/staff/employees',
+      to: '/staff/masters',
       label: 'マスタ管理',
       children: [
-        { to: '/staff/employees', label: '従業員' },
-        { to: '/staff/stores', label: '店舗' },
-        { to: '/staff/grades', label: '等級' },
-        { to: '/staff/salary', label: '給与プラン' }
+        { to: '/staff/employees', label: '従業員マスタ' },
+        { to: '/staff/stores', label: '店舗マスタ' },
+        { to: '/staff/grades', label: '等級マスタ' },
+        { to: '/staff/work-patterns', label: '勤務パターン' },
+        { to: '/staff/store-distances', label: '店舗間距離' },
+        { to: '/staff/commute-methods', label: '通勤手段' },
+        { to: '/staff/business-trip-allowances', label: '出張手当' },
+        { to: '/staff/employee-store-distances', label: '従業員店舗距離' }
       ]
     }
   ],
@@ -47,18 +58,32 @@ const navigationByRole: Record<UserRole, NavItem[]> = {
 };
 
 const isActive = (current: string, item: NavItem) => {
-  if (current === item.to) {
-    return true;
-  }
   if (item.children) {
     return item.children.some((child) => current.startsWith(child.to));
   }
-  return false;
+  return current === item.to;
 };
 
 export const AppLayout = ({ role, userName, companyId, companyName, onLogout }: PropsWithChildren<AppLayoutProps>) => {
   const location = useLocation();
   const items = navigationByRole[role];
+  const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>(() => {
+    // 初期状態で現在のパスに該当する親メニューを展開
+    const initial: Record<string, boolean> = {};
+    items.forEach((item) => {
+      if (item.children && isActive(location.pathname, item)) {
+        initial[item.to] = true;
+      }
+    });
+    return initial;
+  });
+
+  const toggleMenu = (itemTo: string) => {
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [itemTo]: !prev[itemTo]
+    }));
+  };
 
   return (
     <div className="app-layout">
@@ -72,24 +97,37 @@ export const AppLayout = ({ role, userName, companyId, companyName, onLogout }: 
         <nav>
           {items.map((item) => (
             <div key={item.to} className={isActive(location.pathname, item) ? 'nav-item-wrap active' : 'nav-item-wrap'}>
-              <NavLink to={item.to} className={({ isActive: childActive }) => (childActive ? 'nav-item active' : 'nav-item')}>
-                {item.label}
-              </NavLink>
               {item.children ? (
-                <div className="nav-submenu">
-                  {item.children.map((child) => (
-                    <NavLink
-                      key={child.to}
-                      to={child.to}
-                      className={({ isActive: childIsActive }) =>
-                        childIsActive ? 'nav-subitem active' : 'nav-subitem'
-                      }
-                    >
-                      {child.label}
-                    </NavLink>
-                  ))}
-                </div>
-              ) : null}
+                // 親メニュー（サブメニューあり）: クリックでトグルのみ
+                <>
+                  <button
+                    className={isActive(location.pathname, item) ? 'nav-item active' : 'nav-item'}
+                    onClick={() => toggleMenu(item.to)}
+                  >
+                    {item.label}
+                  </button>
+                  {expandedMenus[item.to] && (
+                    <div className="nav-submenu">
+                      {item.children.map((child) => (
+                        <NavLink
+                          key={child.to}
+                          to={child.to}
+                          className={({ isActive: childIsActive }) =>
+                            childIsActive ? 'nav-subitem active' : 'nav-subitem'
+                          }
+                        >
+                          {child.label}
+                        </NavLink>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                // 通常メニュー（サブメニューなし）: NavLinkで遷移
+                <NavLink to={item.to} className={({ isActive: childActive }) => (childActive ? 'nav-item active' : 'nav-item')}>
+                  {item.label}
+                </NavLink>
+              )}
             </div>
           ))}
         </nav>
